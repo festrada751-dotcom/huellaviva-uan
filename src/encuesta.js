@@ -269,7 +269,7 @@ export async function vistaInforme({ sb, app }) {
       ${cats[0] ? `<p>Tu mayor fuente es <b>${CAT[cats[0][0]][1].toLowerCase()}</b>.</p>` : ''}</div>
     ${reto ? `<div class="reto"><h2>🏆 Tu reto del mes</h2><p>${reto}</p></div>` : ''}
     <div class="tarjeta"><h2>El detalle</h2><table><thead><tr><th>Qué</th><th>kg CO₂e</th></tr></thead><tbody>
-      ${items.map((x) => `<tr><td>${h(x.n)} ${x.est ? '<span class="etiqueta">estimado</span>' : ''}</td><td>${n1(x.kg)}</td></tr>`).join('')}</tbody></table></div>
+      ${items.map((x) => `<tr><td>${h(x.n)} ${x.est ? '<span class="etiqueta">estimado</span>' : ''}</td><td>${x.kg < 0.05 ? '&lt; 0,1' : n1(x.kg)}</td></tr>`).join('')}</tbody></table></div>
     <details class="tarjeta"><summary><b>¿Cómo lo calculamos?</b></summary>
       <p>Cada actividad se multiplica por un factor de emisión con fuente. Método ${h(calc.methodology_version)}, calculado el ${new Date(calc.calculated_at).toLocaleString('es-CO')}</p>
       <ul>${[...new Map(det.map((d) => [d.emission_factors?.source, d.emission_factors])).values()].map((f) => `<li>${Number(f.factor_value).toLocaleString('es-CO', { maximumFractionDigits: 5 })} kg CO₂e/${h(f.unit_activity)} · <a href="${h(f.source_url)}" target="_blank" rel="noopener">${h(f.source)}</a> (${f.reference_year}, ${h(f.geography)})</li>`).join('')}</ul>
