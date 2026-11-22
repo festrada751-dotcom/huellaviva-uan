@@ -35,8 +35,11 @@ async function cargarSesion() {
     estado.perfil = p.data; estado.esAdmin = (r.data ?? []).some((x) => x.rol === 'admin_ambiental');
     estado.consent = c.data?.[0] ?? null;
   }
-  const per = await sb.from('survey_periods').select('*').eq('status', 'abierto').order('start_date', { ascending: false }).limit(1);
-  estado.periodo = per.data?.[0] ?? null;
+  estado.periodo = null;
+  if (estado.user) {
+    const per = await sb.from('survey_periods').select('*').eq('status', 'abierto').order('start_date', { ascending: false }).limit(1);
+    estado.periodo = per.data?.[0] ?? null;
+  }
   pintarMenu();
 }
 
@@ -335,7 +338,7 @@ const vistas = {
     const { data: fs } = await sb.from('emission_factors').select('*').order('code').order('version', { ascending: false });
     pintar(`<h1>Factores de emisión</h1>
       <div class="tarjeta tabla-scroll"><table><thead><tr><th>Código</th><th>v</th><th>Actividad</th><th>Valor</th><th>Fuente</th><th>Año</th><th>Vigencia</th><th>Estado</th></tr></thead><tbody>
-      ${(fs ?? []).map((f) => `<tr><td>${h(f.code)}</td><td>${f.version}</td><td>${h(f.activity)}</td><td>${f.factor_value} kg/${h(f.unit_activity)}</td>
+      ${(fs ?? []).map((f) => `<tr><td>${h(f.code)}</td><td>${f.version}</td><td>${h(f.activity)}</td><td>${Number(f.factor_value).toLocaleString('es-CO', { maximumFractionDigits: 5 })} kg/${h(f.unit_activity)}</td>
       <td><a href="${h(f.source_url)}" target="_blank" rel="noopener">${h(f.source)}</a></td><td>${f.reference_year}</td><td>${h(f.valid_from)} → ${h(f.valid_to ?? 'hoy')}</td><td>${h(f.status)}</td></tr>`).join('')}</tbody></table></div>
       <form id="f" class="tarjeta"><h2>Nueva versión de un factor</h2><p class="ayuda">Un factor nunca se edita: se cierra el anterior y se crea una versión nueva. Todo queda en la auditoría.</p>
       <div class="fila"><div><label for="code">Código</label><select id="code">${[...new Set((fs ?? []).map((f) => f.code))].map((c) => `<option>${h(c)}</option>`).join('')}</select></div>
