@@ -268,7 +268,7 @@ const vistas = {
       <div class="tarjeta"><h2>Recomendaciones</h2><ul>${cats.slice(0, 3).map(([c]) => `<li>${recomendaciones[c]}</li>`).join('')}</ul></div>
       <div class="tarjeta"><h2>Cómo se calculó</h2><div class="tabla-scroll"><table><thead><tr><th>Categoría</th><th>Dato convertido</th><th>Factor</th><th>Fuente</th><th>kg CO₂e</th></tr></thead><tbody>
       ${calc.calculation_details.map((d) => `<tr><td>${CAT_NOMBRE[d.category]}</td><td>${kg(d.converted_value)} ${h(d.emission_factors?.unit_activity)}</td>
-        <td>${h(d.emission_factors?.factor_value)} kg/${h(d.emission_factors?.unit_activity)} ${d.emission_factors?.status === 'provisional' ? '<span class="etiqueta">provisional</span>' : ''}</td>
+        <td>${Number(d.emission_factors?.factor_value).toLocaleString('es-CO', { maximumFractionDigits: 5 })} kg/${h(d.emission_factors?.unit_activity)} ${d.emission_factors?.status === 'provisional' ? '<span class="etiqueta">provisional</span>' : ''}</td>
         <td><a href="${h(d.emission_factors?.source_url)}" target="_blank" rel="noopener">${h(d.emission_factors?.source)}</a> (${h(d.emission_factors?.reference_year)}, ${h(d.emission_factors?.geography)})</td>
         <td>${kg(d.emissions_kgco2e)}</td></tr>`).join('')}</tbody></table></div>
       <h2>Limitaciones</h2><ul><li>Es una estimación educativa con incertidumbre alta: las distancias van por rangos y los vuelos usan distancias supuestas.</li>
