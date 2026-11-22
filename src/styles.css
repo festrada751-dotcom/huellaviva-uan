@@ -40,3 +40,44 @@ th { background: #eef2ef; }
 .etiqueta { display: inline-block; padding: 0 .4rem; border-radius: 4px; font-size: .8rem; background: #f9eeda; }
 .consentimiento { max-height: 260px; overflow-y: auto; background: #fbfcfb; border: 1px solid var(--borde); padding: .75rem; border-radius: 6px; }
 @media (max-width: 480px) { .barra-cat { grid-template-columns: 80px 1fr 70px; } .total { font-size: 2rem; } }
+
+/* ===== Encuesta tipo asistente (CR-04) ===== */
+.wiz { background:#fff; border:1px solid var(--borde); border-radius:16px; padding:1.5rem; box-shadow:0 6px 24px rgba(27,122,74,.08); }
+.wiz-top { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem; align-items:center; }
+.wiz-sec { font-weight:700; color:var(--verde); text-transform:uppercase; letter-spacing:.05em; font-size:.85rem; }
+.wiz-live { background:var(--verde-claro); color:var(--verde); padding:.35rem .8rem; border-radius:99px; font-size:.95rem; }
+.wiz-barra { height:8px; background:#eef2ef; border-radius:99px; margin:.8rem 0 1.2rem; overflow:hidden; }
+.wiz-barra div { height:100%; background:linear-gradient(90deg, var(--verde), var(--azul)); border-radius:99px; transition:width .35s ease; }
+.wiz-q { font-size:1.55rem; color:var(--texto); margin:.2rem 0 .3rem; animation:entra .3s ease-out; }
+@keyframes entra { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.wiz-body { margin:1.2rem 0; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:.7rem; }
+.tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.25rem; min-height:110px; padding:.8rem;
+  border:2px solid var(--borde); border-radius:14px; background:#fbfcfb; font:inherit; font-weight:600; color:var(--texto); cursor:pointer;
+  transition:transform .12s ease, border-color .12s ease, background .12s ease; text-align:center; }
+.tile:hover { transform:translateY(-2px); border-color:var(--verde); }
+.tile.sel { border-color:var(--verde); background:var(--verde-claro); box-shadow:0 0 0 3px rgba(27,122,74,.15); }
+.tile small { font-weight:400; color:var(--gris); font-size:.8rem; }
+.emo { font-size:1.9rem; line-height:1; }
+.chips { display:flex; flex-wrap:wrap; gap:.5rem; }
+.chip { padding:.55rem 1rem; border-radius:99px; border:2px solid var(--borde); background:#fbfcfb; font:inherit; cursor:pointer; color:var(--texto); }
+.chip.sel { border-color:var(--verde); background:var(--verde); color:#fff; font-weight:600; }
+.fila-horas { padding:.8rem 0; border-bottom:1px dashed var(--borde); }
+.fila-horas p { margin:0 0 .5rem; } .fila-horas small { color:var(--gris); }
+.contador { display:flex; align-items:center; gap:1.2rem; }
+.redondo { width:52px; height:52px; border-radius:50%; border:2px solid var(--verde); background:#fff; color:var(--verde); font-size:1.6rem; cursor:pointer; }
+.redondo:hover { background:var(--verde-claro); }
+.cifra { font-size:2.2rem; font-weight:800; min-width:2ch; text-align:center; color:var(--verde); }
+.num { display:flex; align-items:center; gap:.6rem; max-width:320px; } .num input { font-size:1.4rem; } .num span { font-weight:700; color:var(--gris); }
+.dato { background:var(--azul-claro); border-left:5px solid var(--azul); padding:.8rem 1rem; border-radius:8px; animation:entra .4s ease-out; }
+.wiz-nav { display:flex; justify-content:space-between; gap:.6rem; }
+.wiz-nav .boton { margin-top:.5rem; }
+.boton:disabled { opacity:.45; cursor:not-allowed; }
+.resultado { text-align:center; background:linear-gradient(135deg, var(--verde), var(--azul)); color:#fff; border-radius:16px; padding:2rem 1rem; margin-bottom:1rem; }
+.resultado p { margin:.3rem 0; } .resultado .ayuda { color:#e5f4e4; }
+.resultado .total { color:#fff; font-size:3.4rem; } .resultado .total span { font-size:1.3rem; font-weight:600; }
+.resultado .etiqueta { color:var(--texto); }
+.reto { background:#f9eeda; border:2px solid #e8c547; border-radius:14px; padding:1rem 1.25rem; margin-bottom:1rem; }
+.reto h2 { margin-top:0; }
+details summary { cursor:pointer; }
+@media (max-width:480px) { .tiles { grid-template-columns:repeat(2, 1fr); } .wiz { padding:1rem; } .wiz-q { font-size:1.3rem; } }
