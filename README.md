@@ -6,8 +6,8 @@ Trabajo final integrador de **Gestión de Requisitos** y **Mecanismos de Persist
 > **Advertencia académica.** Es un estimador educativo y de diagnóstico. No es un inventario institucional verificado, una certificación, una compensación de emisiones ni un registro RENARE. El repositorio solo contiene datos sintéticos.
 
 - Documento de análisis y diseño: `docs/HuellaViva_Analisis_y_Diseno.pdf`
-- Demo: [URL de Vercel]
-- Autor: [Nombre completo] · Roles Scrum: Product Owner, Scrum Master y Developer
+- Demo: https://huellaviva-uan-src.vercel.app/
+- Autor: Fabian Andres Estrada De Armas (código 22242513693) · Docente: Jose Javier Zapata Polo · Roles Scrum: Product Owner, Scrum Master y Developer
 
 ## Qué hace
 
@@ -48,6 +48,7 @@ Cálculo: `emisiones = dato de actividad convertido × factor de emisión`. Cada
    2. `supabase/migrations/20261123000002_rls_y_vistas.sql`
    3. `supabase/migrations/20261123000003_permisos.sql` (los proyectos nuevos de Supabase no dan permisos automáticos)
    4. `supabase/seed.sql`
+   5. `supabase/migrations/20261123000004_encuesta_v2.sql` (CR-04: encuesta sin recibos, parámetros de estimación y método HV-2.0)
 3. Ejecute `tests/rls_y_calculo.sql`. En **Messages** deben aparecer 12 líneas `OK`. El script revierte todo al final.
 4. Copie `src/config.example.js` como `src/config.js` y pegue **Project URL** y la clave **anon public** (Settings → API).
    **Nunca** use la clave `service_role` en el navegador ni la suba a GitHub.
