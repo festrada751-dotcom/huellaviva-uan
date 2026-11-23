@@ -16,6 +16,10 @@ insert into auth.users (id, email) values
  ('33333333-3333-3333-3333-333333333333','admin.ambiental@ejemplo.test');
 insert into public.user_roles values ('33333333-3333-3333-3333-333333333333','admin_ambiental', now());
 
+-- Periodo abierto (Noviembre 2026, método HV-2.0)
+create or replace function pg_temp.periodo() returns uuid language sql as $$
+  select id from public.survey_periods where status = 'abierto' order by start_date desc limit 1 $$;
+
 -- Helper para simular sesión
 create or replace function pg_temp.como(uid uuid) returns void language plpgsql as $$
 begin
@@ -29,7 +33,7 @@ insert into public.profiles (id, tipo_usuario, campus) values (auth.uid(), 'estu
 do $$ begin
   begin
     insert into public.surveys (profile_id, period_id, consent_id)
-    values (auth.uid(), '00000000-0000-0000-0000-0000000000a1', gen_random_uuid());
+    values (auth.uid(), pg_temp.periodo(), gen_random_uuid());
     raise exception 'FALLO PS-04: se guardó encuesta sin consentimiento';
   exception when foreign_key_violation or insufficient_privilege or check_violation then
     insert into resultados(prueba) values ('OK PS-04: sin consentimiento no se guarda');
@@ -40,30 +44,35 @@ end $$;
 insert into public.consents (id, profile_id, consent_version_id)
 values ('aaaaaaaa-0000-0000-0000-000000000001', auth.uid(), '00000000-0000-0000-0000-0000000000c1');
 insert into public.surveys (id, profile_id, period_id, consent_id, personas_hogar, status, submitted_at)
-values ('bbbbbbbb-0000-0000-0000-000000000001', auth.uid(), '00000000-0000-0000-0000-0000000000a1',
+values ('bbbbbbbb-0000-0000-0000-000000000001', auth.uid(), pg_temp.periodo(),
         'aaaaaaaa-0000-0000-0000-000000000001', 3, 'enviada', now());
-insert into public.activity_answers (survey_id, category, question_code, tramo, numeric_value, text_value, unit) values
- ('bbbbbbbb-0000-0000-0000-000000000001','electricidad','E01',1,150,null,'kWh'),
- ('bbbbbbbb-0000-0000-0000-000000000001','gas','G01',1,null,'glp',null),
- ('bbbbbbbb-0000-0000-0000-000000000001','gas','G03',1,1,null,'cilindros'),
- ('bbbbbbbb-0000-0000-0000-000000000001','gas','G04',1,40,null,'lb'),
- ('bbbbbbbb-0000-0000-0000-000000000001','movilidad','T01',1,20,null,'dias'),
- ('bbbbbbbb-0000-0000-0000-000000000001','movilidad','T02',1,null,'bus',null),
- ('bbbbbbbb-0000-0000-0000-000000000001','movilidad','T03',1,7.5,null,'km ida y vuelta'),
- ('bbbbbbbb-0000-0000-0000-000000000001','vuelos','V01',1,1,null,'trayectos');
+insert into public.activity_answers (survey_id, category, question_code, numeric_value, text_value) values
+ ('bbbbbbbb-0000-0000-0000-000000000001','electricidad','E00',null,'no'),
+ ('bbbbbbbb-0000-0000-0000-000000000001','electricidad','AP_NEVERA',1,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','electricidad','AP_VENTILADOR',8,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','electricidad','AP_TV',4.5,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','electricidad','AP_BOMBILLOS',4.5,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','gas','C01',null,'glp'),
+ ('bbbbbbbb-0000-0000-0000-000000000001','gas','CO_DESAYUNO',1,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','gas','CO_ALMUERZO',1,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','gas','CO_CENA',1,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','movilidad','T01',null,'bus'),
+ ('bbbbbbbb-0000-0000-0000-000000000001','movilidad','T02',5,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','movilidad','T03',5,null),
+ ('bbbbbbbb-0000-0000-0000-000000000001','vuelos','VU_NACIONAL',1,null);
 
--- ===== PC-01: cálculo del ejemplo = 209,52 kg CO2e =====
+-- ===== PC-01: cálculo del ejemplo sin recibos (método HV-2.0) =====
 do $$ declare t numeric; begin
   t := public.calcular_encuesta('bbbbbbbb-0000-0000-0000-000000000001');
-  if t between 209.4 and 209.6 then insert into resultados(prueba) values (format('OK PC-01: total = %s kg CO2e', t));
+  if t between 203.75 and 203.85 then insert into resultados(prueba) values (format('OK PC-01: total = %s kg CO2e', t));
   else raise exception 'FALLO PC-01: total = %', t; end if;
 end $$;
 
 -- ===== PV-01: valor negativo rechazado =====
 do $$ begin
   begin
-    insert into public.activity_answers (survey_id, category, question_code, tramo, numeric_value)
-    values ('bbbbbbbb-0000-0000-0000-000000000001','vuelos','V02',1,-3);
+    insert into public.activity_answers (survey_id, category, question_code, numeric_value)
+    values ('bbbbbbbb-0000-0000-0000-000000000001','vuelos','VU_CORTO',-3);
     raise exception 'FALLO PV-01';
   exception when check_violation then insert into resultados(prueba) values ('OK PV-01: valor negativo rechazado'); end;
 end $$;
@@ -117,20 +126,21 @@ do $$ begin
 end $$;
 reset role;
 
--- ===== PC-04 (CR-01): estimación por factura =====
+-- ===== PC-04 (CR-04): con recibo de luz y gas natural real =====
 select pg_temp.como('22222222-2222-2222-2222-222222222222');
 insert into public.consents (id, profile_id, consent_version_id)
 values ('aaaaaaaa-0000-0000-0000-000000000002', auth.uid(), '00000000-0000-0000-0000-0000000000c1');
 insert into public.surveys (id, profile_id, period_id, consent_id, personas_hogar, status)
-values ('bbbbbbbb-0000-0000-0000-000000000002', auth.uid(), '00000000-0000-0000-0000-0000000000a1',
+values ('bbbbbbbb-0000-0000-0000-000000000002', auth.uid(), pg_temp.periodo(),
         'aaaaaaaa-0000-0000-0000-000000000002', 2, 'enviada');
-insert into public.activity_answers (survey_id, category, question_code, numeric_value, unit)
-values ('bbbbbbbb-0000-0000-0000-000000000002','electricidad','E02',120000,'COP');
-update public.activity_answers set text_value = '2' where survey_id = 'bbbbbbbb-0000-0000-0000-000000000002' and question_code = 'E02';
+insert into public.activity_answers (survey_id, category, question_code, numeric_value, text_value) values
+ ('bbbbbbbb-0000-0000-0000-000000000002','electricidad','E00',null,'si'),
+ ('bbbbbbbb-0000-0000-0000-000000000002','electricidad','E01',200,null),
+ ('bbbbbbbb-0000-0000-0000-000000000002','gas','C01',null,'gas_natural'),
+ ('bbbbbbbb-0000-0000-0000-000000000002','gas','C02',10,null);
 do $$ declare t numeric; begin
-  t := public.calcular_encuesta('bbbbbbbb-0000-0000-0000-000000000002');  -- estrato 2: 120.000 / 694,06 = 172,9 kWh / 2 x 0,220 = 19,02
-  if t = 19.02 and exists (select 1 from public.activity_answers where question_code='E01' and is_estimated)
-  then insert into resultados(prueba) values (format('OK PC-04: factura estimada = %s kg CO2e (marcada como estimada)', t));
+  t := public.calcular_encuesta('bbbbbbbb-0000-0000-0000-000000000002');  -- 200/2 x 0,220 = 22 + 10/2 x 1,841 = 9,205 -> 31,21
+  if t = 31.21 then insert into resultados(prueba) values (format('OK PC-04: con recibos = %s kg CO2e (dato medido, no estimado)', t));
   else raise exception 'FALLO PC-04: %', t; end if;
 end $$;
 reset role;
@@ -143,7 +153,7 @@ do $$ declare i int; u uuid; c uuid; s uuid; begin
     insert into public.profiles values (u, (case when i <= 12 then 'estudiante' else 'administrativo' end)::tipo_usuario, 'Santa Marta', 'activo', now());
     insert into public.consents (profile_id, consent_version_id) values (u, '00000000-0000-0000-0000-0000000000c1') returning id into c;
     insert into public.surveys (profile_id, period_id, consent_id, personas_hogar, status)
-      values (u, '00000000-0000-0000-0000-0000000000a1', c, 1 + i % 4, 'enviada') returning id into s;
+      values (u, pg_temp.periodo(), c, 1 + i % 4, 'enviada') returning id into s;
     insert into public.activity_answers (survey_id, category, question_code, numeric_value, unit)
       values (s, 'electricidad', 'E01', 80 + i * 10, 'kWh');
     perform set_config('request.jwt.claims', json_build_object('sub', u)::text, true);
